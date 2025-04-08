@@ -6,8 +6,8 @@ from torchvision import transforms
 
 import data_setup, engine, model_builder, utils
 
-if __name__ == '__main__':
 
+def main():
   parser = argparse.ArgumentParser(description="Get some hyperparameters.")
 
   parser.add_argument(
@@ -52,6 +52,12 @@ if __name__ == '__main__':
     help="Directory file path to testing data in standard image classification format."
   )
 
+  parser.add_argument(
+    "--pretrained",
+    action="store_true",
+    help="Use a pretrained model and apply ImageNet normalization."
+  )
+
   args = parser.parse_args()
 
   NUM_EPOCHS = args.num_epochs
@@ -74,10 +80,25 @@ if __name__ == '__main__':
   torch.backends.cudnn.benchmark = False
   torch.backends.cudnn.deterministic = True
 
-  data_transform = transforms.Compose([
-    transforms.Resize(size=(64, 64)),
+  if args.pretrained:
+    normalize = transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+    print("[INFO] Using EfficientNet normalization for pretrained model.")
+  else:
+    normalize = None
+    print("[INFO] No normalization applied (training from scratch).")
+  
+  transform_list = [
+    transforms.Resize((64, 64)),
     transforms.ToTensor()
-  ])
+  ]
+
+  if normalize:
+    transform_list.append(normalize)
+  
+  data_transform = transforms.Compose(transform_list)
 
   train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(
     train_dir=train_dir,
@@ -110,3 +131,6 @@ if __name__ == '__main__':
     target_dir="models",
     model_name="tiny_vgg_model.pth"
   )
+
+if __name__ == '__main__':
+  main()
