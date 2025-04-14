@@ -54,7 +54,7 @@ def predict(img) -> Tuple[Dict, float]:
 ### 4. Gradio app ### 
 
 title = "FoodVision Big 🍔👁"
-description = "An EfficientNetB2 feature extractor computer vision model to classify images of food into [101 different classes]"
+description = "An ViT feature extractor computer vision model to classify images of food into [101 different classes]"
 
 # Create example list from "examples/" directory
 example_list = [["examples/" + example] for example in os.listdir("examples")]
