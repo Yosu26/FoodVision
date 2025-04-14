@@ -4,6 +4,7 @@ import os
 import torch 
 
 from model import create_vit_model
+from huggingface_hub import hf_hub_download
 from timeit import default_timer as timer 
 from typing import Tuple, Dict 
 
@@ -17,9 +18,14 @@ with open("class_names.txt", "r") as f:
 vit, vit_transforms = create_vit_model(num_classes=len(class_names))
 
 # Load saved weights
+weights_path = hf_hub_download(
+    repo_id="Yosu26/pretrained_vit_food101",
+    filename="pretrained_vit_food101.pth"
+)
+
 vit.load_state_dict(
     torch.load(
-        f="pretrained_vit_food101.pth",
+        weights_path,
         map_location=torch.device("cpu")
     )
 )
