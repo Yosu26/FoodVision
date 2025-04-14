@@ -3,7 +3,7 @@ import gradio as gr
 import os 
 import torch 
 
-from model import create_effnetb2_model
+from model import create_vit_model
 from timeit import default_timer as timer 
 from typing import Tuple, Dict 
 
@@ -14,12 +14,12 @@ with open("class_names.txt", "r") as f:
 ### 2. Model and transforms preparation ###
 
 # Create model 
-effnetb2, effnetb2_transforms = create_effnetb2_model(num_classes=len(class_names))
+vit, vit_transforms = create_vit_model(num_classes=len(class_names))
 
 # Load saved weights
-effnetb2.load_state_dict(
+vit.load_state_dict(
     torch.load(
-        f="effnetb2_feature_extractor_food101.pth",
+        f="pretrained_vit_food101.pth",
         map_location=torch.device("cpu")
     )
 )
@@ -34,13 +34,13 @@ def predict(img) -> Tuple[Dict, float]:
     start_time = timer() 
 
     # Transform the target image and add a batch dimension
-    img = effnetb2_transforms(img).unsqueeze(0)
+    img = vit(img).unsqueeze(0)
 
     # Put model into evaluation mode and turn on inference mode 
-    effnetb2.eval()
+    vit.eval()
     with torch.inference_mode():
         # Pass the transformed image through the model and turn the prediction logits into prediction probabilities
-        pred_probs = torch.softmax(effnetb2(img), dim=1)
+        pred_probs = torch.softmax(vit(img), dim=1)
 
     # Create a prediction label and prediction probability dictionary for each prediction class (this is required format for Gradio's output parameter)
     pred_labels_and_probs = {class_names[i]: float(pred_probs[0][i]) for i in range(len(class_names))}
@@ -73,4 +73,4 @@ demo = gr.Interface(
 )
 
 # Launch the app!
-demo.launch()
+demo.launch(share=True)
