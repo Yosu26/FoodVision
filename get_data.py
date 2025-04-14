@@ -16,20 +16,20 @@ def get_food101_datasets(data_dir: str="data"):
   ])
 
   # Get training data
-  train_data = datasets.Food101(root=data_dir,
+  train = datasets.Food101(root=data_dir,
                                 split="train",
                                 transform=train_transforms,
                                 download=True)
 
-  test_data = datasets.Food101(root=data_dir,
+  test = datasets.Food101(root=data_dir,
                               split="test",
                               transform=vit_transforms,
                               download=True)
   
-  train_data, _ = split_dataset(dataset=train_data,
+  train_data, _ = split_dataset(dataset=train,
                                       split_size=0.2)
 
-  test_data, _ = split_dataset(dataset=test_data,
+  test_data, _ = split_dataset(dataset=test,
                                       split_size=0.2)
   
   return train_data, test_data
