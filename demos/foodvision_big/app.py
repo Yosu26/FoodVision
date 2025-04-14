@@ -34,7 +34,7 @@ def predict(img) -> Tuple[Dict, float]:
     start_time = timer() 
 
     # Transform the target image and add a batch dimension
-    img = vit(img).unsqueeze(0)
+    img = vit_transforms(img).unsqueeze(0)
 
     # Put model into evaluation mode and turn on inference mode 
     vit.eval()
