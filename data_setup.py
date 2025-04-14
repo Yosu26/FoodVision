@@ -1,4 +1,4 @@
-from torch.utils.data import DataLoader 
+from torch.utils.data import DataLoader, Subset
 
 """Creates training and testing DataLoaders from given datasets.
 
@@ -37,6 +37,9 @@ def create_dataloaders(
     pin_memory=True
   )
   
-  class_names = train_data.classes
+  if isinstance(train_data, Subset):
+    class_names = train_data.dataset.classes
+  else:
+    class_names = train_data.classes
 
   return train_dataloader, test_dataloader, class_names
