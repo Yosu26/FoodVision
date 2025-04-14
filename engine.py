@@ -41,7 +41,7 @@ def train_step(
     y_pred = model(X)
 
     loss = loss_fn(y_pred, y)
-    train_loss += loss 
+    train_loss += loss.item() 
 
     optimizer.zero_grad()
 
@@ -74,7 +74,7 @@ def test_step(
       test_pred = model(X)
 
       loss = loss_fn(test_pred, y)
-      test_loss += loss 
+      test_loss += loss.item() 
 
       test_pred_labels = torch.argmax(test_pred, dim=1)
       test_acc += ((test_pred_labels == y).sum().item()/len(test_pred))
