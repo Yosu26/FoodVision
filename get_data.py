@@ -1,26 +1,50 @@
-
-import os
-import requests
-import zipfile 
-
+from torchvision import datasets, transforms
+from model_builder import create_vit_model
+from utils import split_dataset
 from pathlib import Path
 
-data_path = Path("data")
-image_path = data_path/"pizza_steak_sushi"
+def get_food101_datasets(data_dir: str="data"):
+  # Setup data directory
+  data_dir = Path(data_dir)
 
-if image_path.is_dir():
-  print(f"Directory {image_path} exists.")
-else:
-  print(f"Directory {image_path} does not exist, creating one...")
-  image_path.mkdir(parents=True, exist_ok=True)
+  # Create Food101 training data transform
+  _, vit_transforms = create_vit_model()
 
-with open(data_path/"pizza_steak_sushi.zip","wb") as f:
-  request = requests.get("https://github.com/Yosu26/FoodVision/raw/refs/heads/main/pizza_steak_sushi.zip")
-  print(f"Downloading pizza, steak, sushi data...")
-  f.write(request.content)
+  train_transforms = transforms.Compose([
+    transforms.TrivialAugmentWide(),
+    vit_transforms
+  ])
 
-with zipfile.ZipFile(data_path/"pizza_steak_sushi.zip","r") as zip_ref:
-  print(f"Unzipping pizza, steak, sushi data...")
-  zip_ref.extractall(image_path)
+  # Get training data
+  train_data = datasets.Food101(root=data_dir,
+                                split="train",
+                                transform=train_transforms,
+                                download=True)
 
-os.remove(data_path/"pizza_steak_sushi.zip")
+  test_data = datasets.Food101(root=data_dir,
+                              split="test",
+                              transform=vit_transforms,
+                              download=True)
+  
+  train_data, _ = split_dataset(dataset=train_data,
+                                      split_size=0.2)
+
+  test_data, _ = split_dataset(dataset=test_data,
+                                      split_size=0.2)
+  
+  return train_data, test_data
+
+def get_imagefolder_datasets(
+  train_dir: str,
+  test_dir: str,
+  transform: transforms.Compose
+):
+
+  # Get training data
+  train_data = datasets.ImageFolder(train_dir,
+                                    transform=transform)
+  
+  test_data = datasets.ImageFolder(test_dir,
+                                   transform=transform)
+  
+  return train_data, test_data
