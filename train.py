@@ -75,7 +75,7 @@ def main():
   optimizer = torch.optim.Adam(vit.parameters(), lr=LEARNING_RATE)
 
   engine.train(
-    model=vit,
+    model=vit.to(device),
     train_dataloader=train_dataloader,
     test_dataloader=test_dataloader,
     loss_fn=loss_fn,
