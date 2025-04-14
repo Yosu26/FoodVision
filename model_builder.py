@@ -64,7 +64,7 @@ def create_vit_model(num_classes:int=3,
 
   # Change classifier head with random seed for reproducibility
   torch.manual_seed(seed)
-  model.classifier = nn.Sequential(
+  model.heads = nn.Sequential(
       nn.Linear(in_features=768, out_features=num_classes)
   )
 
