@@ -3,3 +3,4 @@ torchvision==0.16.2
 gradio==4.15.0
 fastapi==0.109.0 
 pydantic==2.5.3 
+huggingface_hub==0.15.0
