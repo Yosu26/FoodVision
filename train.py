@@ -1,123 +1,81 @@
-
-import os 
 import argparse
 import torch 
+
+import data_setup, engine, model_builder, utils, get_data
 from torchvision import transforms
-
-import data_setup, engine, model_builder, utils
-
 
 def main():
   parser = argparse.ArgumentParser(description="Get some hyperparameters.")
 
   parser.add_argument(
     "--num_epochs",
-    default=10,
+    default=5,
     type=int,
     help="Number of epochs to train the model for."
   )
 
   parser.add_argument(
     "--batch_size",
-    default=16,
+    default=32,
     type=int,
     help="Number of samples per batch."
   )
 
   parser.add_argument(
-    "--hidden_units",
-    default=10,
-    type=int,
-    help="Number of hidden units per hidden layer."
-  )
-
-  parser.add_argument(
     "--learning_rate",
-    default=0.001,
+    default=1e-3,
     type=float,
     help="Learning rate to use for the model"
   )
-
+  
   parser.add_argument(
-    "--train_dir",
-    default="data/pizza_steak_sushi/train",
-    type=str,
-    help="Directory file path to training data in standard image classification format."
-  )
-
-  parser.add_argument(
-    "--test_dir",
-    default="data/pizza_steak_sushi/test",
-    type=str,
-    help="Directory file path to testing data in standard image classification format."
-  )
-
-  parser.add_argument(
-    "--pretrained",
+    "--use_food101",
     action="store_true",
-    help="Use a pretrained model and apply ImageNet normalization."
+    help="Use the Food101 dataset"
   )
-
+  
+  parser.set_defaults(use_food101=True)
+  
   args = parser.parse_args()
 
   NUM_EPOCHS = args.num_epochs
   BATCH_SIZE = args.batch_size
-  HIDDEN_UNITS = args.hidden_units
   LEARNING_RATE = args.learning_rate
 
   print("[INFO] Training configuration:")
   for key, value in vars(args).items():
     print(f" {key}: {value}")
 
-  train_dir = args.train_dir
-  test_dir = args.test_dir 
-
-  print(f"[INFO] Training data file: {train_dir}")
-  print(f"[INFO] Testing data file: {test_dir}")
-
   device = "cuda" if torch.cuda.is_available() else "cpu"
 
   torch.backends.cudnn.benchmark = False
   torch.backends.cudnn.deterministic = True
 
-  if args.pretrained:
-    normalize = transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    )
-    print("[INFO] Using EfficientNet normalization for pretrained model.")
+  # Get datasets
+  if args.use_food101:
+    train_data, test_data = get_data.get_food101_datasets()
   else:
-    normalize = None
-    print("[INFO] No normalization applied (training from scratch).")
-  
-  transform_list = [
-    transforms.Resize((64, 64)),
-    transforms.ToTensor()
-  ]
+    _, vit_transforms = model_builder.create_vit_model()
 
-  if normalize:
-    transform_list.append(normalize)
-  
-  data_transform = transforms.Compose(transform_list)
-
+    train_data, test_data = get_data.get_imagefolder_datasets(
+      train_dir=args.train_dir,
+      test_dir=args.test_dir,
+      transform=vit_transforms
+    )
+      
   train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(
-    train_dir=train_dir,
-    test_dir=test_dir,
-    transform=data_transform,
+    train_data,
+    test_data,
     batch_size=BATCH_SIZE
   )
-
-  model = model_builder.TinyVGG(
-    input_shape=3,
-    hidden_units=HIDDEN_UNITS,
-    output_shape=len(class_names)
-  ).to(device)
-
-  loss_fn = torch.nn.CrossEntropyLoss()
-  optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+  
+  vit, _ = model_builder.create_vit_model(num_classes=len(class_names), seed=42)
+  
+  loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
+  optimizer = torch.optim.Adam(vit.parameters(), lr=LEARNING_RATE)
 
   engine.train(
-    model=model,
+    model=vit,
     train_dataloader=train_dataloader,
     test_dataloader=test_dataloader,
     loss_fn=loss_fn,
@@ -127,9 +85,9 @@ def main():
   )
 
   utils.save_model(
-    model=model,
+    model=vit,
     target_dir="models",
-    model_name="tiny_vgg_model.pth"
+    model_name="pretrained_vit_model.pth"
   )
 
 if __name__ == '__main__':
