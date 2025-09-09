@@ -9,6 +9,8 @@ Try the Gradio demo locally:
 cd demos/foodvision_big
 python app.py
 ```
+
+Live demo: https://huggingface.co/spaces/Yosu26/foodvision_demo
 <br>
 
 # 🧠 Model Architecture
