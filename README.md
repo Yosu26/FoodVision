@@ -4,11 +4,28 @@ A computer vision project that classifies food images into 101 categories using 
 <br>
 
 # 📷 Demo
-Try the Gradio demo locally:
+Run locally with Python
 ```bash
-cd demos/foodvision_big
+# Go to the demo folder
+cd demos
+
+# Install dependencies if not installed
+pip install -r requirements.txt
+
+# Run the app
 python app.py
 ```
+
+Run with Docker (recommended)
+```bash
+# Build the Docker image 
+docker build -t foodvision-demo .
+
+# Run the container with port mapping 
+docker run -p 7860:7860 foodvision-demo
+```
+
+Open your browser at: `http://localhost:7860`
 
 Live demo: https://huggingface.co/spaces/Yosu26/foodvision_demo
 <br>
