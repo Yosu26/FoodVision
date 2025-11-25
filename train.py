@@ -34,6 +34,20 @@ def main():
     help="Use the Food101 dataset"
   )
   
+  parser.add_argument(
+    "--train_dir",
+    type=str,
+    default=None,
+    help="Path to training dataset (ImageFolder)."
+  )
+
+  parser.add_argument(
+    "--test_dir",
+    type=str,
+    default=None,
+    help="Path to test dataset (ImageFolder)."
+  )
+  
   parser.set_defaults(use_food101=True)
   
   args = parser.parse_args()
